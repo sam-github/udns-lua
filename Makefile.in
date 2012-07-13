@@ -1,0 +1,60 @@
+# Example of a typical Makefile template for autosetup
+
+# Tools. CC is standard. The rest are via cc-check-tools
+CC = @CC@
+
+# FLAGS/LIBS
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+LDLIBS += @LIBS@
+
+# Install destination
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+DESTDIR = 
+
+# Project-specific CFLAGS
+
+CPPFLAGS += -D_GNU_SOURCE -Wall -Werror -I. -I$(LUA_INCLUDE_PATH)
+
+LUA_INCLUDE_PATH = @LUA_INCLUDE_PATH@
+
+ifneq ($(LUA_INCLUDE_PATH),)
+CPPFLAGS += -I$(LUA_INCLUDE_PATH)
+endif
+
+# VPATH support for out-of-tree build
+ifneq (@srcdir@,.)
+CPPFLAGS += -I@srcdir@
+VPATH := @srcdir@
+endif
+
+LIBOBJS = udns.o
+LIB = udns.so
+
+# All objects destined for the shared library need these flags
+CPPFLAGS += @SH_CFLAGS@
+
+all: $(LIB)
+
+$(LIB): $(LIBOBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) @SH_LDFLAGS@ -o $@ $^ $(LDLIBS)
+
+install: all
+	@echo Installing from @srcdir@ and @builddir@ to $(DESTDIR)$(prefix)
+
+clean:
+	rm -f *.o *.so lib*.a conftest.*
+
+distclean: clean
+	rm -f config.h Makefile config.log
+
+# Reconfigure if needed
+ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+Makefile: @AUTODEPS@ @srcdir@/Makefile.in
+	@@AUTOREMAKE@
+endif
+
+# Or on demand
+reconfig:
+	@AUTOREMAKE@

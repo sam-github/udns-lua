@@ -1,10 +1,22 @@
 # Initial auto.def created by 'autosetup --init'
 
-use cc
+use cc cc-shared
 
 # Add any user options here
 options {
+	# lua header location
+	# lua version
+}
+
+cc-check-includes udns.h
+
+if {[cc-check-includes lua.h]} {
+} elseif {[cc-check-includes /usr/local/include/lua5.1/lua.h]} {
+	define LUA_INCLUDE_PATH /usr/local/include/lua5.1
+} elseif {[cc-check-includes /usr/include/lua5.1/lua.h]} {
+	define LUA_INCLUDE_PATH /usr/include/lua5.1
 }
 
 make-config-header config.h
 make-template Makefile.in
+
