@@ -15,12 +15,10 @@ DESTDIR =
 
 # Project-specific CFLAGS
 
-CPPFLAGS += -D_GNU_SOURCE -Wall -Werror -I. -I$(LUA_INCLUDE_PATH)
+CPPFLAGS += -D_GNU_SOURCE -Wall -Werror -I.
 
-LUA_INCLUDE_PATH = @LUA_INCLUDE_PATH@
-
-ifneq ($(LUA_INCLUDE_PATH),)
-CPPFLAGS += -I$(LUA_INCLUDE_PATH)
+ifneq (@LUA_INCLUDE_PATH@,)
+CPPFLAGS += -I@LUA_INCLUDE_PATH@
 endif
 
 # VPATH support for out-of-tree build
@@ -42,6 +40,9 @@ $(LIB): $(LIBOBJS)
 
 install: all
 	@echo Installing from @srcdir@ and @builddir@ to $(DESTDIR)$(prefix)
+
+test: $(LIB)
+	lua -l udns -e 'print(udns)'
 
 clean:
 	rm -f *.o *.so lib*.a conftest.*

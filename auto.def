@@ -4,17 +4,51 @@ use cc cc-shared
 
 # Add any user options here
 options {
-	# lua header location
-	# lua version
+	with-lua:	=> "Search for Lua in directory DIR"
 }
 
 cc-check-includes udns.h
 
-if {[cc-check-includes lua.h]} {
-} elseif {[cc-check-includes /usr/local/include/lua5.1/lua.h]} {
-	define LUA_INCLUDE_PATH /usr/local/include/lua5.1
-} elseif {[cc-check-includes /usr/include/lua5.1/lua.h]} {
-	define LUA_INCLUDE_PATH /usr/include/lua5.1
+# TODO pull lua search into a module
+# TODO allow "use lua" "use lua5.1" etc. to specify supported lua version, if not both
+# TODO print version of lua found
+
+# Lua header search strategy
+#   Implicit:
+#     1. System default search
+#     2. /usr/local/include+{,lua5.1,lua5.2}
+#     3. /usr/include+{,lua5.1,lua5.2}
+#   Explicit:
+#     1. PATH+{,lua5.1,lua5.2}
+
+set WITHLUA [opt-val with-lua]
+
+proc check-lua-dir {dir} {
+	foreach sub { "" /lua5.1 /lua5.2 } {
+		if {[cc-check-includes $dir$sub/lua.h]} {
+			define LUA_INCLUDE_PATH $dir$sub
+			return 1
+		}
+	}
+}
+
+proc check-lua-dirs {dirs} {
+	foreach dir $dirs {
+		if {[check-lua-dir $dir]} {
+			return 1
+		}
+	}
+}
+
+if { $WITHLUA == "" } {
+	# Implicit
+	if {[cc-check-includes lua.h]} {
+	} else {
+		check-lua-dirs { /usr/local/include /usr/include }
+	}
+} else {
+	# Explicit
+	check-lua-dir $WITHLUA
 }
 
 make-config-header config.h
