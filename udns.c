@@ -36,7 +36,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "lauxlib.h"
 #include "lualib.h"
 
-static const luaL_reg udns_module[] =
+static const luaL_Reg udns_module[] =
 {
     {NULL, NULL}
 };
